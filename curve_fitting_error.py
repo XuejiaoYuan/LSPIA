@@ -1,9 +1,9 @@
 import numpy as np
 
 
-def fitting_error(D, P, Nik):
+def curve_fitting_error(D, P, Nik):
     '''
-    Calculate the fitting error.
+    Calculate the curve fitting error.
     :param D: the data points
     :param P: the control points
     :param Nik: the basis spline function
@@ -18,9 +18,9 @@ def fitting_error(D, P, Nik):
     return error
 
 
-def adjusting_control_points(D, P, Nik, miu):
+def curve_adjusting_control_points(D, P, Nik, miu):
     '''
-    Adjusting the control points with the adjusting vector.
+    Adjusting the curve control points with the adjusting vector.
     :param D: the data points
     :param P: the control points
     :param Nik: the basis spline function
