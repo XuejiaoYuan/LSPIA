@@ -47,6 +47,7 @@ def load_surface_data(filename):
     return [D_X, D_Y, D_Z]
 
 
+
 def LSPIA_curve():
     '''
     The LSPIA iterative method for blending curves.
