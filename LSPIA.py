@@ -47,6 +47,38 @@ def load_surface_data(filename):
     return [D_X, D_Y, D_Z]
 
 
+def load_shadow_block_data(filename):
+    D_X = []
+    D_Y = []
+    shadow_Z = []
+    block_Z = []
+    with open(filename) as file:
+        line = file.readline()
+        print(line)
+        line = line.strip()
+        word = line.split(' ')
+        row = int(word[0])
+        col = int(word[1])
+        for i in range(row):
+            D_X_row = []
+            D_Y_row = []
+            shadow_Z_row = []
+            block_Z_row = []
+            for j in range(col):
+                line = file.readline()
+                line = line.strip()
+                word = line.split(' ')
+                D_X_row.append(float(word[0]))
+                D_Y_row.append(float(word[1]))
+                shadow_Z_row.append(float(word[2]))
+                block_Z_row.append(float(word[3]))
+            D_X.append(D_X_row)
+            D_Y.append(D_Y_row)
+            shadow_Z.append(shadow_Z_row)
+            block_Z.append(block_Z_row)
+    return [D_X, D_Y, shadow_Z, block_Z]
+
+
 def LSPIA_curve():
     '''
     The LSPIA iterative method for blending curves.
@@ -160,7 +192,10 @@ def LSPIA_surface():
     '''
     The LSPIA iterative method for blending surfaces.
     '''
-    D = load_surface_data('surface_data2')
+    # D = load_surface_data('surface_data2')
+    D_shadow_block = load_shadow_block_data('shadow_block_m1_d1_h8_min0.txt')
+    D = [D_shadow_block[0], D_shadow_block[1], D_shadow_block[2]]
+
     D_X = D[0]
     D_Y = D[1]
     D_Z = D[2]
@@ -215,19 +250,19 @@ def LSPIA_surface():
         P_Y_row = []
         P_Z_row = []
         for j in range(0, P_l - 1):
-            # f_j = int(col * j / P_l)
-            # P_X_row.append(D_X[f_i][f_j])
-            # P_Y_row.append(D_Y[f_i][f_j])
-            # P_Z_row.append(D_Z[f_i][f_j])
-            P_X_row.append(0)
-            P_Y_row.append(0)
-            P_Z_row.append(0)
-        # P_X_row.append(D_X[f_i][-1])
-        # P_Y_row.append(D_Y[f_i][-1])
-        # P_Z_row.append(D_Z[f_i][-1])
-        P_X_row.append(0)
-        P_Y_row.append(0)
-        P_Z_row.append(0)
+            f_j = int(col * j / P_l)
+            P_X_row.append(D_X[f_i][f_j])
+            P_Y_row.append(D_Y[f_i][f_j])
+            P_Z_row.append(D_Z[f_i][f_j])
+            # P_X_row.append(0)
+            # P_Y_row.append(0)
+            # P_Z_row.append(0)
+        P_X_row.append(D_X[f_i][-1])
+        P_Y_row.append(D_Y[f_i][-1])
+        P_Z_row.append(D_Z[f_i][-1])
+        # P_X_row.append(0)
+        # P_Y_row.append(0)
+        # P_Z_row.append(0)
         P_X.append(P_X_row)
         P_Y.append(P_Y_row)
         P_Z.append(P_Z_row)
