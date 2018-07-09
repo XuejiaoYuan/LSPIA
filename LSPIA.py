@@ -499,7 +499,7 @@ def LSPIA_FUNC_surface():
     miu_v = 2 / C
 
     # miu = miu_u * miu_v
-    miu = 0.35
+    miu = 0.3
     Nik = [Nik_u, Nik_v]
 
     '''

@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="438d38e8-89d3-42b7-b441-dfd0b18b366f" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/LSPIA.py" beforeDir="false" afterPath="$PROJECT_DIR$/LSPIA.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/parameter_selection.py" beforeDir="false" afterPath="$PROJECT_DIR$/parameter_selection.py" afterDir="false" />
     </list>
@@ -20,12 +21,10 @@
       <file leaf-file-name="LSPIA.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/LSPIA.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-548">
-              <caret line="431" column="57" lean-forward="true" selection-start-line="431" selection-start-column="57" selection-end-line="431" selection-end-column="57" />
+            <state relative-caret-position="164">
+              <caret line="526" selection-start-line="526" selection-end-line="526" />
               <folding>
                 <element signature="e#556#1302#0" />
-                <element signature="e#1347#2269#0" />
-                <element signature="e#2295#5125#0" />
                 <element signature="e#5153#10900#0" />
               </folding>
             </state>
@@ -35,8 +34,8 @@
       <file leaf-file-name="surface_fitting_error.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/surface_fitting_error.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="266">
-              <caret line="20" selection-start-line="20" selection-end-line="20" />
+            <state relative-caret-position="136">
+              <caret line="41" selection-start-line="41" selection-end-line="41" />
             </state>
           </provider>
         </entry>
@@ -44,8 +43,8 @@
       <file leaf-file-name="parameter_selection.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/parameter_selection.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="443">
-              <caret line="87" column="29" selection-start-line="87" selection-start-column="29" selection-end-line="87" selection-end-column="29" />
+            <state relative-caret-position="234">
+              <caret line="85" column="8" selection-start-line="85" selection-start-column="8" selection-end-line="85" selection-end-column="8" />
             </state>
           </provider>
         </entry>
@@ -98,8 +97,10 @@
     <packageJsonPaths />
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="width" value="1920" />
-    <option name="height" value="1080" />
+    <option name="x" value="1912" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1096" />
   </component>
   <component name="ProjectInspectionProfilesVisibleTreeState">
     <entry key="Project Default">
@@ -214,9 +215,8 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1912" y="-8" width="1936" height="1096" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.24973656" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.17428268" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Event Log" order="7" side_tool="true" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.40083507" />
@@ -224,7 +224,7 @@
       <window_info anchor="bottom" id="Python Console" order="7" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info anchor="bottom" id="Terminal" order="7" weight="0.20772442" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.5219207" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" visible="true" weight="0.434238" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.34204793" />
@@ -269,6 +269,11 @@
           <line>198</line>
           <option name="timeStamp" value="44" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/LSPIA.py</url>
+          <line>526</line>
+          <option name="timeStamp" value="62" />
+        </line-breakpoint>
       </breakpoints>
       <default-breakpoints>
         <breakpoint type="python-exception">
@@ -277,7 +282,7 @@
           </properties>
         </breakpoint>
       </default-breakpoints>
-      <option name="time" value="51" />
+      <option name="time" value="63" />
     </breakpoint-manager>
     <watches-manager>
       <configuration name="PythonConfigurationType">
@@ -349,8 +354,6 @@
           <caret line="47" selection-start-line="47" selection-end-line="47" />
           <folding>
             <element signature="e#556#1302#0" />
-            <element signature="e#1347#2269#0" />
-            <element signature="e#2295#5125#0" />
             <element signature="e#5153#10900#0" />
           </folding>
         </state>
@@ -362,8 +365,6 @@
           <caret line="351" column="2" selection-start-line="351" selection-start-column="2" selection-end-line="351" selection-end-column="2" />
           <folding>
             <element signature="e#556#1302#0" />
-            <element signature="e#1347#2269#0" />
-            <element signature="e#2295#5125#0" />
             <element signature="e#5153#10900#0" />
           </folding>
         </state>
@@ -389,8 +390,6 @@
           <caret line="351" selection-start-line="351" selection-end-line="351" />
           <folding>
             <element signature="e#556#1302#0" />
-            <element signature="e#1347#2269#0" />
-            <element signature="e#2295#5125#0" />
             <element signature="e#5153#10900#0" />
           </folding>
         </state>
@@ -420,8 +419,6 @@
           <caret line="299" column="12" selection-start-line="299" selection-start-column="12" selection-end-line="299" selection-end-column="12" />
           <folding>
             <element signature="e#556#1302#0" />
-            <element signature="e#1347#2269#0" />
-            <element signature="e#2295#5125#0" />
             <element signature="e#5153#10900#0" />
           </folding>
         </state>
@@ -457,8 +454,6 @@
         <state>
           <folding>
             <element signature="e#556#1302#0" />
-            <element signature="e#1347#2269#0" />
-            <element signature="e#2295#5125#0" />
             <element signature="e#5153#10900#0" />
           </folding>
         </state>
@@ -509,28 +504,26 @@
     <entry file="file:///usr/local/lib/python3.6/site-packages/numpy/core/fromnumeric.py" />
     <entry file="file:///usr/local/lib/python3.6/site-packages/matplotlib/transforms.py" />
     <entry file="file:///usr/local/lib/python3.6/site-packages/matplotlib/lines.py" />
-    <entry file="file://$PROJECT_DIR$/surface_fitting_error.py">
+    <entry file="file://$PROJECT_DIR$/parameter_selection.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="266">
-          <caret line="20" selection-start-line="20" selection-end-line="20" />
+        <state relative-caret-position="234">
+          <caret line="85" column="8" selection-start-line="85" selection-start-column="8" selection-end-line="85" selection-end-column="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/parameter_selection.py">
+    <entry file="file://$PROJECT_DIR$/surface_fitting_error.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="443">
-          <caret line="87" column="29" selection-start-line="87" selection-start-column="29" selection-end-line="87" selection-end-column="29" />
+        <state relative-caret-position="136">
+          <caret line="41" selection-start-line="41" selection-end-line="41" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/LSPIA.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-548">
-          <caret line="431" column="57" lean-forward="true" selection-start-line="431" selection-start-column="57" selection-end-line="431" selection-end-column="57" />
+        <state relative-caret-position="164">
+          <caret line="526" selection-start-line="526" selection-end-line="526" />
           <folding>
             <element signature="e#556#1302#0" />
-            <element signature="e#1347#2269#0" />
-            <element signature="e#2295#5125#0" />
             <element signature="e#5153#10900#0" />
           </folding>
         </state>
