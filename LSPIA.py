@@ -407,26 +407,26 @@ def LSPIA_FUNC_surface():
     '''
     Step 1. Calculate the parameters
     '''
-    param_u = [y[0] for y in D_Y]
-    param_v = [D_X[0][i] for i in range(col-1, -1, -1)]
-    # tmp_param = np.zeros((1, row))
-    # for i in range(col):
-    #     D_col_X = [x[i] for x in D_X]
-    #     D_col_Y = [y[i] for y in D_Y]
-    #     D_col_Z = [z[i] for z in D_Z]
-    #     D_col = [D_col_X, D_col_Y, D_col_Z]
-    #     tmp_param = tmp_param + np.array(ps.centripetal(row, D_col))
-    # param_u = np.divide(tmp_param, col).tolist()[0]
-    #
-    # param_v = []
-    # tmp_param = np.zeros((1, col))
-    # for i in range(row):
-    #     D_row_X = D_X[i]
-    #     D_row_Y = D_Y[i]
-    #     D_row_Z = D_Z[i]
-    #     D_row = [D_row_X, D_row_Y, D_row_Z]
-    #     tmp_param = tmp_param + np.array(ps.centripetal(col, D_row))
-    # param_v = np.divide(tmp_param, row).tolist()[0]
+    param_u = []
+    tmp_param = np.zeros((1, row))
+    for i in range(row):
+        for j in range(col):
+            tmp_param[0][i] = tmp_param[0][i] + D_Y[i][j]
+        tmp_param[0][i] = tmp_param[0][i] / col
+    tmp_param.sort()
+    param_u = tmp_param.tolist()[0]
+
+    param_v = []
+    tmp_param = np.zeros((1, col))
+    for j in range(col):
+        for i in range(row):
+            tmp_param[0][j] = tmp_param[0][j] + D_X[i][j]
+        tmp_param[0][j] = tmp_param[0][j] / row
+    tmp_param.sort()
+    param_v = tmp_param.tolist()[0]
+    print(param_v)
+    print(param_u)
+
 
     '''
     Step 2. Calculate the knot vectors
@@ -434,6 +434,8 @@ def LSPIA_FUNC_surface():
     knot_uv = [[], []]
     knot_uv[0] = ps.LSPIA_knot_vector(param_u, p, P_h, row)
     knot_uv[1] = ps.LSPIA_knot_vector(param_v, q, P_l, col)
+    print(knot_uv[0])
+    print(knot_uv[1])
 
     '''
     Step 3. Select initial control points
@@ -497,7 +499,7 @@ def LSPIA_FUNC_surface():
     miu_v = 2 / C
 
     # miu = miu_u * miu_v
-    miu = 0.01
+    miu = 0.35
     Nik = [Nik_u, Nik_v]
 
     '''
