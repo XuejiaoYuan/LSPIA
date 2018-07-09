@@ -64,7 +64,8 @@ def load_shadow_block_data(filename):
             D_Y_row = []
             shadow_Z_row = []
             block_Z_row = []
-            for j in range(col):
+            tmp_col = col - i % 2
+            for j in range(tmp_col):
                 line = file.readline()
                 line = line.strip()
                 word = line.split(' ')
@@ -306,7 +307,7 @@ def LSPIA_surface():
     miu_v = 2 / C
 
     # miu = miu_u * miu_v
-    miu = 0.7
+    miu = 0.3
     Nik = [Nik_u, Nik_v]
 
     '''
@@ -336,10 +337,10 @@ def LSPIA_surface():
     '''
     Step 7. Calculate data points on the b-spline curve
     '''
-    piece_u = 50
-    piece_v = 100
-    p_piece_u = np.linspace(0, 1, piece_u)
-    p_piece_v = np.linspace(0, 1, piece_v)
+    piece_u = 30
+    piece_v = 30
+    p_piece_u = np.linspace(param_u[0], param_u[-1], piece_u)
+    p_piece_v = np.linspace(param_v[0], param_v[-1], piece_v)
     Nik_piece_u = np.zeros((piece_u, P_h))
     Nik_piece_v = np.zeros((piece_v, P_l))
     for i in range(piece_u):
@@ -401,8 +402,8 @@ def LSPIA_FUNC_surface():
 
     p = 3  # degree
     q = 3
-    P_h = int(row - 0)  # the number of control points
-    P_l = int(col - 0)
+    P_h = int(row - 10)  # the number of control points
+    P_l = int(col - 20)
 
     '''
     Step 1. Calculate the parameters
