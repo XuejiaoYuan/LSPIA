@@ -92,4 +92,4 @@ def LSPIA_knot_vector(param, k, N, M):
         n = int(jd)
         alpha = jd - n
         knot[0][i] = (1-alpha)*param[n-1]+alpha*param[n]
-    return knot[0]
+    return knot.tolist()[0]

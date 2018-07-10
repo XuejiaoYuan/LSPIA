@@ -359,9 +359,9 @@ def LSPIA_surface():
     '''
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    for i in range(int(row/4)):
-        for j in range(int(col/4)):
-            ax.scatter(D_X[4*i][4*j], D_Y[4*i][4*j], D_Z[4*i][4*j], color='r')
+    for i in range(int(row / 4)):
+        for j in range(int(col / 4)):
+            ax.scatter(D_X[4 * i][4 * j], D_Y[4 * i][4 * j], D_Z[4 * i][4 * j], color='r')
     # for i in range(len(P[0]) - 1):
     #     plt.scatter(P[0][i], P[1][i], color='b')
     # for i in range(len(P[0]) - 1):
@@ -390,7 +390,7 @@ def LSPIA_FUNC_surface():
        The LSPIA iterative method for blending surfaces.
        '''
     # D = load_surface_data('surface_data2')
-    D_shadow_block = load_shadow_block_data('shadow_block_m1_d1_h8_min0.txt')
+    D_shadow_block = load_shadow_block_data('cross_shadow_block_m1_d1_h8_min0.txt')
     D = [D_shadow_block[0], D_shadow_block[1], D_shadow_block[3]]
 
     D_X = D[0]
@@ -427,7 +427,6 @@ def LSPIA_FUNC_surface():
     param_v = tmp_param.tolist()[0]
     print(param_v)
     print(param_u)
-
 
     '''
     Step 2. Calculate the knot vectors
@@ -580,8 +579,263 @@ def LSPIA_FUNC_surface():
     plt.show()
 
 
+def LSPIA_FUNC_cross_surface():
+    '''
+    The LSPIA iterative method for blending surfaces.
+    Deal with the cross filed which is arranged as following:
+    #    #    #   #    #
+      *    *    *   *
+    #    #    #   #    #
+      *    *    *   *
+    #    #    #   #    #
+      *    *    *   *
+    The even row has one more heliostat than odd row.
+    Assumption:
+        1. The number of row is even;
+        2. The number of first row is even;
+    '''
+    # D = load_surface_data('surface_data2')
+    D_shadow_block = load_shadow_block_data('cross_shadow_block_m1_d1_h8_min0_60x90.txt')
+    D = [D_shadow_block[0], D_shadow_block[1], D_shadow_block[3]]
+
+    D_X = D[0]
+    D_Y = D[1]
+    D_Z = D[2]
+
+    row = len(D_X)
+    row_even = int(row/2) + row % 2
+    row_odd = int(row/2)
+    col_even = len(D_X[0])
+    col_odd = len(D_X[0]) - 1
+    p = 3  # degree
+    q = 3
+    P_h = int(row / 2)  # the number of control points
+    P_l = int(col_even - 40)
+
+    '''
+    Step 1. Calculate the parameters
+    '''
+    param_even = [[], D_X[0]]  # u, v
+    param_odd = [[], D_X[1]]
+    tmp_param = np.zeros((1, int(row / 2) + row % 2))
+    for i in range(0, int(row/2)+row % 2):
+        tmp_param[0][i] = D_Y[2*i][0]
+    tmp_param.sort()
+    param_even[0] = tmp_param.tolist()[0]
+
+    tmp_param = np.zeros((1, int(row / 2)))
+    for i in range(0, int(row/2)):
+        tmp_param[0][i] = D_Y[2*i+1][0]
+    tmp_param.sort()
+    param_odd[0] = tmp_param.tolist()[0]
+    # param_u = []
+    # tmp_param = np.zeros((1, row))
+    # param_u = [D_Y[i][0] for i in range(row-1, -1, -1)]
+    # for i in range(row, -1, -1):
+    #     tmp_param[0][i] = D_Y[0]
+    # tmp_param.sort()
+    # param_u = tmp_param.tolist()[0]
+
+    # param_v_max = D_X[0]        # the parameters for the even row (which contains more heliostats)
+    # param_v_min = D_X[1]        # the parameters for the odd row
+
+    # param_v = []
+    # tmp_param = np.zeros((1, col))
+    # for j in range(col):
+    #     for i in range(row):
+    #         tmp_param[0][j] = tmp_param[0][j] + D_X[i][j]
+    #     tmp_param[0][j] = tmp_param[0][j] / row
+    # tmp_param.sort()
+    # param_v = tmp_param.tolist()[0]
+    # print(param_v)
+    # print(param_u)
+
+    '''
+    Step 2. Calculate the knot vectors
+    '''
+    knot_uv_even = [[], []]
+    knot_uv_odd = [[], []]
+    knot_uv_even[0] = ps.LSPIA_knot_vector(param_even[0], p, P_h, row_even)
+    knot_uv_even[1] = ps.LSPIA_knot_vector(param_even[1], q, P_l, col_even)
+    knot_uv_odd[0] = ps.LSPIA_knot_vector(param_odd[0], p, P_h, row_odd)
+    knot_uv_odd[1] = ps.LSPIA_knot_vector(param_odd[1], q, P_l, col_odd)
+    # knot_uv = [[], []]
+    # knot_uv[0] = ps.LSPIA_knot_vector(param_u, p, P_h, row)
+    # knot_uv[1] = ps.LSPIA_knot_vector(param_v_max, q, P_l, col_max)
+    # knot_uv[2] = ps.LSPIA_knot_vector(param_v_min, q, P_l, col_min)
+    # print(knot_uv[0])
+    # print(knot_uv[1])
+    # print(knot_uv[2])
+    #
+    '''
+    Step 3. Select initial control points
+    '''
+    P_X = []
+    P_Y = []
+    P_Z = []
+    for i in range(0, 2 * P_h, 2):  # only choose even row as the initial control points
+        P_X_row = []
+        P_Y_row = []
+        P_Z_row = []
+        for j in range(0, P_l - 1):
+            f_j = int(col_even * j / P_l)
+            P_X_row.append(D_X[i][f_j])
+            P_Y_row.append(D_Y[i][f_j])
+            P_Z_row.append(D_Z[i][f_j])
+        P_X_row.append(D_X[i][-1])
+        P_Y_row.append(D_Y[i][-1])
+        P_Z_row.append(D_Z[i][-1])
+        P_X.append(P_X_row)
+        P_Y.append(P_Y_row)
+        P_Z.append(P_Z_row)
+
+    # P_X_row = []
+    # P_Y_row = []
+    # P_Z_row = []
+    # for j in range(0, P_l - 1):
+    #     f_j = int(col * j / P_l)
+    #     P_X_row.append(D_X[-1][f_j])
+    #     P_Y_row.append(D_Y[-1][f_j])
+    #     P_Z_row.append(D_Z[-1][f_j])
+    # P_X_row.append(D_X[f_i][-1])
+    # P_Y_row.append(D_Y[f_i][-1])
+    # P_Z_row.append(D_Z[f_i][-1])
+    # P_X.append(P_X_row)
+    # P_Y.append(P_Y_row)
+    # P_Z.append(P_Z_row)
+    # print(len(P_X))
+    P = [P_X, P_Y, P_Z]
+
+    '''
+    Step 4. Calculate the collocation matrix of the NTP blending basis
+    '''
+    Nik_uv_even = [np.zeros((row_even, P_h)), np.zeros((col_even, P_l))]
+    Nik_uv_odd = [np.zeros((row_odd, P_h)), np.zeros((col_odd, P_l))]
+
+    for i in range(row_even):
+        for j in range(P_h):
+            Nik_uv_even[0][i][j] = bf.BaseFunction(j, p+1, param_even[0][i], knot_uv_even[0])
+    for i in range(col_even):
+        for j in range(P_l):
+            Nik_uv_even[1][i][j] = bf.BaseFunction(j, q+1, param_even[1][i], knot_uv_even[1])
+
+    for i in range(row_odd):
+        for j in range(P_h):
+            Nik_uv_odd[0][i][j] = bf.BaseFunction(j, p+1, param_odd[0][i], knot_uv_odd[0])
+    for i in range(col_odd):
+        for j in range(P_l):
+            Nik_uv_odd[1][i][j] = bf.BaseFunction(j, q+1, param_odd[1][i], knot_uv_odd[1])
+
+    Nik = [Nik_uv_even, Nik_uv_odd]
+    miu = 0.2
+
+    # Nik_u = np.zeros((row_even, P_h))
+    # # c_u = np.zeros((1, P_h))
+    # for i in range(row):
+    #     for j in range(P_h):
+    #         Nik_u[i][j] = bf.BaseFunction(j, p + 1, param_u[i], knot_uv[0])
+    #         # c_u[0][j] = c_u[0][j] + Nik_u[i][j]
+    # # C = max(c_u[0].tolist())
+    # # miu_u = 2 / C
+    #
+    # Nik_v_max = np.zeros((col_max, P_l))
+    # # c_v = np.zeros((1, P_l))
+    # for i in range(col_max):
+    #     for j in range(P_l):
+    #         Nik_v_max[i][j] = bf.BaseFunction(j, q + 1, param_v_max[i], knot_uv[1])
+    #         # c_v[0][j] = c_v[0][j] + Nik_v[i][j]
+    # # C = max(c_v[0].tolist())
+    # # miu_v = 2 / C
+    #
+    # Nik_v_min = np.zeros((col_min, P_l))
+    # for i in range(col_min):
+    #     for j in range(P_l):
+    #         Nik_v_min[i][j] = bf.BaseFunction(j, q + 1, param_v_min[i], knot_uv[2])
+    # # miu = miu_u * miu_v
+    # miu = 0.3
+    # Nik = [Nik_u, Nik_v_max, Nik_v_min]
+
+    '''
+    Step 5. First iteration
+    '''
+    e = []
+    ek = sfe.surface_fitting_error(D, P, Nik)
+    e.append(ek)
+
+    '''
+    Step 6. Adjusting control points
+    '''
+    P = sfe.surface_adjusting_control_points(D, P, Nik, miu)
+    # print(P)
+    ek = sfe.surface_fitting_error(D, P, Nik)
+    e.append(ek)
+
+    cnt = 0
+    while (abs(e[-1] - e[-2]) >= 1e-7):
+        cnt = cnt + 1
+        print('iteration ', cnt)
+        P = sfe.surface_adjusting_control_points(D, P, Nik, miu)
+        # print(P)
+        ek = sfe.surface_fitting_error(D, P, Nik)
+        e.append(ek)
+    print(ek)
+    '''
+    Step 7. Calculate data points on the b-spline curve
+    '''
+    piece_u = 50
+    piece_v = 100
+    p_piece_u = np.linspace(param_u[0], param_u[-1], piece_u)
+    p_piece_v = np.linspace(param_v[0], param_v[-1], piece_v)
+    # p_piece_u = np.linspace(0, 1, piece_u)
+    # p_piece_v = np.linspace(0, 1, piece_v)
+    Nik_piece_u = np.zeros((piece_u, P_h))
+    Nik_piece_v = np.zeros((piece_v, P_l))
+    for i in range(piece_u):
+        for j in range(P_h):
+            Nik_piece_u[i][j] = bf.BaseFunction(j, p + 1, p_piece_u[i], knot_uv[0])
+    for i in range(piece_v):
+        for j in range(P_l):
+            Nik_piece_v[i][j] = bf.BaseFunction(j, q + 1, p_piece_v[i], knot_uv[1])
+
+    p_piece = [piece_u, piece_v]
+    Nik_piece = [Nik_piece_u, Nik_piece_v]
+    P_piece = sfe.surface(p_piece, P, Nik_piece)
+
+    '''
+    Step 8. Draw b-spline curve
+    '''
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    for i in range(int(row / 4)):
+        for j in range(int(col / 4)):
+            ax.scatter(D_X[4 * i][4 * j], D_Y[4 * i][4 * j], D_Z[4 * i][4 * j], color='r')
+    # for i in range(len(P[0]) - 1):
+    #     plt.scatter(P[0][i], P[1][i], color='b')
+    # for i in range(len(P[0]) - 1):
+    #     tmp_x = [P[0][i], P[0][i + 1]]
+    #     tmp_y = [P[1][i], P[1][i + 1]]
+    #     plt.plot(tmp_x, tmp_y, color='b')
+
+    for i in range(piece_u):
+        for j in range(piece_v - 1):
+            tmp_x = [P_piece[0][i][j], P_piece[0][i][j + 1]]
+            tmp_y = [P_piece[1][i][j], P_piece[1][i][j + 1]]
+            tmp_z = [P_piece[2][i][j], P_piece[2][i][j + 1]]
+            ax.plot(tmp_x, tmp_y, tmp_z, color='g')
+    for j in range(piece_v):
+        for i in range(piece_u - 1):
+            tmp_x = [P_piece[0][i][j], P_piece[0][i + 1][j]]
+            tmp_y = [P_piece[1][i][j], P_piece[1][i + 1][j]]
+            tmp_z = [P_piece[2][i][j], P_piece[2][i + 1][j]]
+            ax.plot(tmp_x, tmp_y, tmp_z, color='g')
+
+    plt.show()
+
+
 # LSPIA_curve()
 
 # LSPIA_surface()
 
-LSPIA_FUNC_surface()
+# LSPIA_FUNC_surface()
+
+LSPIA_FUNC_cross_surface()
