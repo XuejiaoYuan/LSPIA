@@ -618,7 +618,7 @@ def cross_data_preprocess(D):
     return D_inter
 
 
-def LSPIA_FUNC_cross_surface():
+def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     '''
     The LSPIA iterative method for blending surfaces.
     Deal with the cross filed which is arranged as following:
@@ -634,7 +634,8 @@ def LSPIA_FUNC_cross_surface():
         2. The number of first row is even;
     '''
     # D = load_surface_data('surface_data2')
-    D_shadow_block = load_shadow_block_data('cross_shadow_block_m1_d1_h8_min0.txt')
+    # D_shadow_block = load_shadow_block_data('cross_shadow_block_m1_d1_h8_min0.txt')
+    D_shadow_block = load_shadow_block_data(file_name)
     D = [D_shadow_block[0], D_shadow_block[1], D_shadow_block[3]]
     D_inter = cross_data_preprocess(D)
 
@@ -652,8 +653,8 @@ def LSPIA_FUNC_cross_surface():
     col_odd = len(D_X[0]) - 1
     p = 3  # degree
     q = 3
-    P_h = int(row - 10)  # the number of control points
-    P_l = int(col_even - 30)
+    # P_h = int(row - 15)  # the number of control points
+    # P_l = int(col_even - 40)
 
     '''
     Step 1. Calculate the parameters
@@ -743,7 +744,7 @@ def LSPIA_FUNC_cross_surface():
         for j in range(P_l):
             Nik_v_odd[i][j] = bf.BaseFunction(j, q + 1, D_X[1][i], knot_uv[1])
     Nik = [Nik_u, Nik_v_even, Nik_v_odd]
-    miu = 0.4
+    # miu = 0.12
 
     '''
     Step 5. First iteration
@@ -761,7 +762,7 @@ def LSPIA_FUNC_cross_surface():
     e.append(ek)
 
     cnt = 0
-    while (abs(e[-1] - e[-2]) >= 1e-3):
+    while (abs(e[-1] - e[-2]) >= 1e-5):
         cnt = cnt + 1
         print('iteration ', cnt)
         P = sfe.surface_adjusting_control_points(D, P, Nik, miu)
@@ -772,18 +773,10 @@ def LSPIA_FUNC_cross_surface():
     print(MSE)
     error_matrix, error_list = sfe.point_fitting_error(D, P, Nik)
 
-    # with open('error_matrix.txt', 'w') as file:
-    #     file.write(str(row) + ' ' + str(col) + '\n')
-    #     for i in range(row):
-    #         if i % 2:
-    #             for j in range(col-1):
-    #                 file.write(str(D_X[i][j]) + ' ' + str(D_Y[i][j]) + ' ')
-    #                 file.write(str(error_matrix[i][j]) + '\n')
-    #         else:
-    #             for j in range(col):
-    #                 file.write(str(D_X[i][j]) + ' ' + str(D_Y[i][j]) + ' ')
-    #                 file.write(str(error_matrix[i][j]) + '\n')
-    #         file.write('\n')
+    with open('error_list_' + str(P_h) + 'x' + str(P_l) + '_' + str(miu) + '.txt', 'w') as file:
+        for i in range(len(e) - 1):
+            file.write(str(e[i]) + '\n')
+        file.write(str(e[-1]))
 
     '''
     Step 7. Calculate data points on the b-spline curve
@@ -810,82 +803,37 @@ def LSPIA_FUNC_cross_surface():
     Step 8. Draw b-spline curve
     '''
     fig = plt.figure()
-    # ax = fig.add_subplot(111, projection='3d')
-    # for i in range(int(row / 4)):
-    #     for j in range(int(col / 4) - 1):
-    #         tmp_x = [D_X[4 * i][4 * j], D_X[4 * i][4 * (j + 1)]]
-    #         tmp_y = [D_Y[4 * i][4 * j], D_Y[4 * i][4 * (j + 1)]]
-    #         tmp_z = [D_Z[4 * i][4 * j], D_Z[4 * i][4 * (j + 1)]]
-    #         ax.plot(tmp_x, tmp_y, tmp_z, color='r')
-    # for i in range(int(row/4)-1):
-    #     for j in range(int(col/4)):
-    #         tmp_x = [D_X[4 * i][4 * j], D_X[4 * (i+1)][4 * j]]
-    #         tmp_y = [D_Y[4 * i][4 * j], D_Y[4 * (i+1)][4 * j]]
-    #         tmp_z = [D_Z[4 * i][4 * j], D_Z[4 * (i+1)][4 * j]]
-    #         ax.plot(tmp_x, tmp_y, tmp_z, color='r')
+    ax = fig.add_subplot(111, projection='3d')
+    for i in range(int(row / 4)):
+        for j in range(int(col / 4) - 1):
+            tmp_x = [D_X[4 * i][4 * j], D_X[4 * i][4 * (j + 1)]]
+            tmp_y = [D_Y[4 * i][4 * j], D_Y[4 * i][4 * (j + 1)]]
+            tmp_z = [D_Z[4 * i][4 * j], D_Z[4 * i][4 * (j + 1)]]
+            ax.plot(tmp_x, tmp_y, tmp_z, color='r')
+    for i in range(int(row/4)-1):
+        for j in range(int(col/4)):
+            tmp_x = [D_X[4 * i][4 * j], D_X[4 * (i+1)][4 * j]]
+            tmp_y = [D_Y[4 * i][4 * j], D_Y[4 * (i+1)][4 * j]]
+            tmp_z = [D_Z[4 * i][4 * j], D_Z[4 * (i+1)][4 * j]]
+            ax.plot(tmp_x, tmp_y, tmp_z, color='r')
 
+    # x_list = []
+    # y_list = []
     # for i in range(row):
-    #     if i % 2:
-    #         for j in range(col - 2):
-    #             tmp_x = [D_X[i][j], D_X[i][j + 1]]
-    #             tmp_y = [D_Y[i][j], D_Y[i][j + 1]]
-    #             tmp_z = [error_matrix[i][j], error_matrix[i][j + 1]]
-    #             ax.plot(tmp_x, tmp_y, tmp_z, color='r')
-    #     else:
-    #         for j in range(col - 1):
-    #             tmp_x = [D_X[i][j], D_X[i][j + 1]]
-    #             tmp_y = [D_Y[i][j], D_Y[i][j + 1]]
-    #             tmp_z = [error_matrix[i][j], error_matrix[i][j + 1]]
-    #             ax.plot(tmp_x, tmp_y, tmp_z, color='r')
+    #     x_list.extend(D_X[i])
+    #     y_list.extend(D_Y[i])
+    # error_list = np.array(error_list)
+    # cm = plt.cm.get_cmap('cool')
+    # sc = plt.scatter(x_list, y_list, c=error_list, alpha=0.8, s=20, cmap=cm)
+    # plt.colorbar(sc)
+    # plt.show()
 
-    x_list = []
-    y_list = []
-    for i in range(row):
-        if i%2:
-            for j in range(col-1):
-                x_list.append(D_X[i][j])
-                y_list.append(D_Y[i][j])
-                # color = 25500000.0 * error_matrix[i][j]
-                # plt.scatter(D_X[i][j], D_Y[i][j], c=0.5)
-        else:
-            for j in range(col):
-                x_list.append(D_X[i][j])
-                y_list.append(D_Y[i][j])
-                # color = 25500000.0 * error_matrix[i][j]
-                # plt.scatter(D_X[i][j], D_Y[i][j], c=color)
-    error_list = 2550 * np.array(error_list)
-    plt.scatter(np.array(x_list), np.array(y_list), c=error_list)
-    # for i in range(row - 1):
-    #     if i % 2:
-    #         for j in range(col - 1):
-    #             tmp_x = [D_X[i][j], D_X[i + 1][j]]
-    #             tmp_y = [D_Y[i][j], D_Y[i + 1][j]]
-    #             tmp_z = [error_matrix[i][j], error_matrix[i + 1][j]]
-    #             ax.plot(tmp_x, tmp_y, tmp_z, color='r')
-    #             tmp_x = [D_X[i][j], D_X[i + 1][j + 1]]
-    #             tmp_y = [D_Y[i][j], D_Y[i + 1][j + 1]]
-    #             tmp_z = [error_matrix[i][j], error_matrix[i + 1][j + 1]]
-    #             ax.plot(tmp_x, tmp_y, tmp_z, color='r')
-    #     else:
-    #         for j in range(col):
-    #             if j != col-1:
-    #                 tmp_x = [D_X[i][j], D_X[i + 1][j]]
-    #                 tmp_y = [D_Y[i][j], D_Y[i + 1][j]]
-    #                 tmp_z = [error_matrix[i][j], error_matrix[i + 1][j]]
-    #                 ax.plot(tmp_x, tmp_y, tmp_z, color='r')
-    #             if j != 0:
-    #                 tmp_x = [D_X[i][j], D_X[i + 1][j - 1]]
-    #                 tmp_y = [D_Y[i][j], D_Y[i + 1][j - 1]]
-    #                 tmp_z = [error_matrix[i][j], error_matrix[i + 1][j - 1]]
-    #                 ax.plot(tmp_x, tmp_y, tmp_z, color='r')
-    plt.show()
-
-    for i in range(len(P[0]) - 1):
-        plt.scatter(P[0][i], P[1][i], color='b')
-    for i in range(len(P[0]) - 1):
-        tmp_x = [P[0][i], P[0][i + 1]]
-        tmp_y = [P[1][i], P[1][i + 1]]
-        plt.plot(tmp_x, tmp_y, color='b')
+    # for i in range(len(P[0]) - 1):
+    #     plt.scatter(P[0][i], P[1][i], color='b')
+    # for i in range(len(P[0]) - 1):
+    #     tmp_x = [P[0][i], P[0][i + 1]]
+    #     tmp_y = [P[1][i], P[1][i + 1]]
+    #     plt.plot(tmp_x, tmp_y, color='b')
 
     for i in range(piece_u):
         for j in range(piece_v - 1):
@@ -903,10 +851,73 @@ def LSPIA_FUNC_cross_surface():
     plt.show()
 
 
+def error_trend():
+    error_15x20_12 = []
+    error_20x20_32: list
+    error_20x30_40: list
+    error_20x30_51: list
+    error_20x40_70: list
+    # with open('error_list_15x20_0.12.txt') as file:
+    #     line = file.readline()
+    #     line.strip()
+    #     word = line.split(' ')
+        # error_15x20_12 = [np.float64(w) for w in word]
+
+    # with open('error_list_20x20_0.32.txt') as file:
+    #     line = file.readline()
+    #     line.strip()
+    #     word = line.split(' ')
+    #     error_20x20_32 = [float(w) for w in word]
+    #
+    # with open('error_list_20x30_0.4.txt') as file:
+    #     line = file.readline()
+    #     line.strip()
+    #     word = line.split(' ')
+    #     error_20x30_40 = [float(w) for w in word]
+    #
+    # with open('error_list_20x30_0.51.txt') as file:
+    #     line = file.readline()
+    #     line.strip()
+    #     word = line.split(' ')
+    #     error_20x30_51 = [float(w) for w in word]
+    #
+    # with open('error_list_20x40_0.7.txt') as file:
+    #     line = file.readline()
+    #     line.strip()
+    #     word = line.split(' ')
+    #     error_20x40_70 = [float(w) for w in line]
+
+    fig = plt.figure()
+    for i in range(error_15x20_12):
+        plt.scatter(i, error_15x20_12[i], c='r')
+    for i in range(error_20x20_32):
+        plt.scatter(i, error_20x20_32[i], c='b')
+    for i in range(error_20x40_70):
+        plt.scatter(i, error_20x40_70[i], c='g')
+    for i in range(error_20x30_51):
+        plt.scatter(i, error_20x30_51[i], c='b')
+    for i in range(error_20x30_40):
+        plt.scatter(i, error_20x30_40[i], c='y')
+
+    plt.show()
+
 # LSPIA_curve()
 
 # LSPIA_surface()
 
 # LSPIA_FUNC_surface()
 
-LSPIA_FUNC_cross_surface()
+
+file_name = 'cross_shadow_block_m1_d1_h8_min0.txt'
+
+# LSPIA_FUNC_cross_surface(file_name, 15, 20, 0.12)
+
+LSPIA_FUNC_cross_surface(file_name, 20, 20, 0.32)
+
+LSPIA_FUNC_cross_surface(file_name, 20, 30, 0.4)
+
+LSPIA_FUNC_cross_surface(file_name, 20, 30, 0.51)
+
+LSPIA_FUNC_cross_surface(file_name, 20, 40, 0.7)
+
+# error_trend()
