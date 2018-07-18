@@ -762,7 +762,7 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     e.append(ek)
 
     cnt = 0
-    while (abs(e[-1] - e[-2]) >= 1e-5):
+    while (abs(e[-1] - e[-2]) >= 1e-3):
         cnt = cnt + 1
         print('iteration ', cnt)
         P = sfe.surface_adjusting_control_points(D, P, Nik, miu)
@@ -781,7 +781,7 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     '''
     Step 7. Calculate data points on the b-spline curve
     '''
-    piece_u = 30
+    piece_u = 60
     piece_v = 60
     p_piece_u = np.linspace(param_u[0], param_u[-1], piece_u)
     p_piece_v = np.linspace(param_v[0], param_v[-1], piece_v)
@@ -804,18 +804,6 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     '''
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
-    for i in range(int(row / 4)):
-        for j in range(int(col / 4) - 1):
-            tmp_x = [D_X[4 * i][4 * j], D_X[4 * i][4 * (j + 1)]]
-            tmp_y = [D_Y[4 * i][4 * j], D_Y[4 * i][4 * (j + 1)]]
-            tmp_z = [D_Z[4 * i][4 * j], D_Z[4 * i][4 * (j + 1)]]
-            ax.plot(tmp_x, tmp_y, tmp_z, color='r')
-    for i in range(int(row/4)-1):
-        for j in range(int(col/4)):
-            tmp_x = [D_X[4 * i][4 * j], D_X[4 * (i+1)][4 * j]]
-            tmp_y = [D_Y[4 * i][4 * j], D_Y[4 * (i+1)][4 * j]]
-            tmp_z = [D_Z[4 * i][4 * j], D_Z[4 * (i+1)][4 * j]]
-            ax.plot(tmp_x, tmp_y, tmp_z, color='r')
 
     # x_list = []
     # y_list = []
@@ -823,83 +811,71 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     #     x_list.extend(D_X[i])
     #     y_list.extend(D_Y[i])
     # error_list = np.array(error_list)
-    # cm = plt.cm.get_cmap('cool')
+    # cm = plt.cm.get_cmap('seismic')
     # sc = plt.scatter(x_list, y_list, c=error_list, alpha=0.8, s=20, cmap=cm)
     # plt.colorbar(sc)
     # plt.show()
 
-    # for i in range(len(P[0]) - 1):
-    #     plt.scatter(P[0][i], P[1][i], color='b')
-    # for i in range(len(P[0]) - 1):
-    #     tmp_x = [P[0][i], P[0][i + 1]]
-    #     tmp_y = [P[1][i], P[1][i + 1]]
-    #     plt.plot(tmp_x, tmp_y, color='b')
-
-    for i in range(piece_u):
-        for j in range(piece_v - 1):
-            tmp_x = [P_piece[0][i][j], P_piece[0][i][j + 1]]
-            tmp_y = [P_piece[1][i][j], P_piece[1][i][j + 1]]
-            tmp_z = [P_piece[2][i][j], P_piece[2][i][j + 1]]
-            ax.plot(tmp_x, tmp_y, tmp_z, color='g')
-    for j in range(piece_v):
-        for i in range(piece_u - 1):
-            tmp_x = [P_piece[0][i][j], P_piece[0][i + 1][j]]
-            tmp_y = [P_piece[1][i][j], P_piece[1][i + 1][j]]
-            tmp_z = [P_piece[2][i][j], P_piece[2][i + 1][j]]
-            ax.plot(tmp_x, tmp_y, tmp_z, color='g')
-
+    p_piece_u_r = [p_piece_u[i] for i in range(piece_u-1, -1, -1)]
+    X, Y = np.meshgrid(p_piece_v, p_piece_u_r)
+    Z = np.array(P_piece[2])
+    ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
     plt.show()
 
 
 def error_trend():
     error_15x20_12 = []
-    error_20x20_32: list
-    error_20x30_40: list
-    error_20x30_51: list
-    error_20x40_70: list
-    # with open('error_list_15x20_0.12.txt') as file:
-    #     line = file.readline()
-    #     line.strip()
-    #     word = line.split(' ')
-        # error_15x20_12 = [np.float64(w) for w in word]
+    error_20x20_32 = []
+    error_20x30_40 = []
+    error_20x30_51 = []
+    error_20x40_70 = []
+    with open('error_list_15x20_0.12.txt') as file:
+        for line in file.readlines():
+            line.strip()
+            error_15x20_12.append(float(line))
 
-    # with open('error_list_20x20_0.32.txt') as file:
-    #     line = file.readline()
-    #     line.strip()
-    #     word = line.split(' ')
-    #     error_20x20_32 = [float(w) for w in word]
-    #
-    # with open('error_list_20x30_0.4.txt') as file:
-    #     line = file.readline()
-    #     line.strip()
-    #     word = line.split(' ')
-    #     error_20x30_40 = [float(w) for w in word]
-    #
-    # with open('error_list_20x30_0.51.txt') as file:
-    #     line = file.readline()
-    #     line.strip()
-    #     word = line.split(' ')
-    #     error_20x30_51 = [float(w) for w in word]
-    #
-    # with open('error_list_20x40_0.7.txt') as file:
-    #     line = file.readline()
-    #     line.strip()
-    #     word = line.split(' ')
-    #     error_20x40_70 = [float(w) for w in line]
+    with open('error_list_20x20_0.32.txt') as file:
+        for line in file.readlines():
+            line.strip()
+            error_20x20_32.append(float(line))
+
+    with open('error_list_20x30_0.4.txt') as file:
+        for line in file.readlines():
+            line.strip()
+            error_20x30_40.append(float(line))
+
+    with open('error_list_20x30_0.51.txt') as file:
+        for line in file.readlines():
+            line.strip()
+            error_20x30_51.append(float(line))
+
+    with open('error_list_20x40_0.7.txt') as file:
+        for line in file.readlines():
+            line.strip()
+            error_20x40_70.append(float(line))
 
     fig = plt.figure()
-    for i in range(error_15x20_12):
-        plt.scatter(i, error_15x20_12[i], c='r')
-    for i in range(error_20x20_32):
-        plt.scatter(i, error_20x20_32[i], c='b')
-    for i in range(error_20x40_70):
-        plt.scatter(i, error_20x40_70[i], c='g')
-    for i in range(error_20x30_51):
-        plt.scatter(i, error_20x30_51[i], c='b')
-    for i in range(error_20x30_40):
-        plt.scatter(i, error_20x30_40[i], c='y')
+    for i in range(min(100, len(error_15x20_12))):
+        if i % 5 == 0:
+            plt.scatter(i, error_15x20_12[i], c='r')
+    # plt.show()
+    for i in range(min(100, len(error_20x20_32))):
+        if i % 5 == 0:
+            plt.scatter(i, error_20x20_32[i], c='b')
+    # plt.show()
+    for i in range(min(100, len(error_20x40_70))):
+        if i % 5 == 0:
+            plt.scatter(i, error_20x40_70[i], c='g')
+    # plt.show()
+    for i in range(min(100, len(error_20x30_51))):
+        if i % 5 == 0:
+            plt.scatter(i, error_20x30_51[i], c='m')
+    for i in range(min(100, len(error_20x30_40))):
+        if i % 5 == 0:
+            plt.scatter(i, error_20x30_40[i], c='c')
 
     plt.show()
+
 
 # LSPIA_curve()
 
@@ -911,13 +887,13 @@ def error_trend():
 file_name = 'cross_shadow_block_m1_d1_h8_min0.txt'
 
 # LSPIA_FUNC_cross_surface(file_name, 15, 20, 0.12)
-
-LSPIA_FUNC_cross_surface(file_name, 20, 20, 0.32)
-
-LSPIA_FUNC_cross_surface(file_name, 20, 30, 0.4)
+#
+# LSPIA_FUNC_cross_surface(file_name, 20, 20, 0.32)
+#
+# LSPIA_FUNC_cross_surface(file_name, 20, 30, 0.4)
 
 LSPIA_FUNC_cross_surface(file_name, 20, 30, 0.51)
 
-LSPIA_FUNC_cross_surface(file_name, 20, 40, 0.7)
+# LSPIA_FUNC_cross_surface(file_name, 20, 40, 0.7)
 
 # error_trend()

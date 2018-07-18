@@ -9,23 +9,8 @@ def surface_fitting_error(D, P, Nik):
     :param Nik: the basis spline function
     :return: fitting error
     '''
-    error = 0
     error_matrix, error_list = point_fitting_error(D, P, Nik)
-    error = np.sum(np.array(error_list))
-    # Nik_u = Nik[0]
-    # Nik_v_even = Nik[1]
-    # Nik_v_odd = Nik[2]
-    # row = len(D[0])
-    #
-    # for dim in range(len(D)):
-    #     for i in range(row):
-    #         Nik_u_row = np.array(Nik_u[i])
-    #         P_dim = np.array(P[dim])
-    #         if i % 2:
-    #             error = error + np.sum(np.square(D[dim][i] - np.dot(np.dot(Nik_u_row, P_dim), np.transpose(Nik_v_odd))))
-    #         else:
-    #             error = error + np.sum(
-    #                 np.square(D[dim][i] - np.dot(np.dot(Nik_u_row, P_dim), np.transpose(Nik_v_even))))
+    error = np.sum(np.square(error_list))
     return error
 
 
@@ -44,6 +29,7 @@ def point_fitting_error(D, P, Nik):
     row = len(D[0])
     for i in range(row):
         # for j in range(col):
+        error_row = np.zeros((1, len(D[0][0]) - i % 2))
         for dim in range(len(D)):
             Nik_u_row = np.array(Nik_u[i])
             P_dim = np.array(P[dim])
@@ -52,9 +38,9 @@ def point_fitting_error(D, P, Nik):
             else:
                 Nik_v = Nik[1]
             D_cal = np.dot(np.dot(Nik_u_row, P_dim), np.transpose(Nik_v))
-            error_row = np.square(D[dim][i] - D_cal)
-        error.append(error_row.tolist())
-        error_list.extend(error_row.tolist())
+            error_row = error_row + (D[dim][i] - D_cal)
+        error.append(error_row.tolist()[0])
+        error_list.extend(error_row.tolist()[0])
 
     return error, error_list
 
