@@ -61,9 +61,9 @@ def knot_vector(param, k, N):
     m = N + k
     knot = np.zeros((1, m + 1))
     for i in range(k + 1):
-        knot[0][i] = 0
+        knot[0][i] = param[0]
     for i in range(m - k, m + 1):
-        knot[0][i] = 1
+        knot[0][i] = param[-1]
     for i in range(k + 1, m - k):
         for j in range(i - k, i):
             knot[0][i] = knot[0][i] + param[j]
@@ -93,3 +93,4 @@ def LSPIA_knot_vector(param, k, N, M):
         alpha = jd - n
         knot[0][i] = (1-alpha)*param[n-1]+alpha*param[n]
     return knot.tolist()[0]
+
