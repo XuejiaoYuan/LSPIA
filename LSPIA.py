@@ -632,6 +632,8 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     Assumption:
         1. The number of row is even;
         2. The number of first row is even;
+    Note:
+            全部数据点用于LSPIA
     '''
     # D = load_surface_data('surface_data2')
     # D_shadow_block = load_shadow_block_data('cross_shadow_block_m1_d1_h8_min0.txt')
@@ -839,6 +841,8 @@ def LSPIA_FUNC_cross_surface_test(file_name, P_h, P_l, miu):
     Assumption:
         1. The number of row is even;
         2. The number of first row is even;
+    Note:
+        全部数据点用于LSPIA
     非张量积LSPIA拟合：
         选择镜场较多一行作为参数，计算对应节点向量，不进行初始点插值计算；
         初始点选择：间隔随机选择；
@@ -1101,33 +1105,7 @@ def error_trend():
     plt.show()
 
 
-# LSPIA_curve()
+fieldfile_path = 'field_data/cross_field/300x300/'
+file_name = fieldfile_path + 'shadow_block_m1_d1_h8_min0.txt'
 
-# LSPIA_surface()
-
-# LSPIA_FUNC_surface()
-
-
-file_name = 'cross_shadow_block_m1_d1_h8_min0.txt'
-
-LSPIA_FUNC_cross_surface(file_name, 20, 36, 0.5)
-#
-# LSPIA_FUNC_cross_surface(file_name, 20, 20, 0.32)
-#
-# LSPIA_FUNC_cross_surface(file_name, 20, 30, 0.4)
-
-# LSPIA_FUNC_cross_surface_test(file_name, 16, 30, 0.2)
-
-# LSPIA_FUNC_cross_surface(file_name, 20, 40, 0.7)
-
-# error_trend()
-
-# e_low = 2360119
-#
-# e = np.zeros((24 - 10, 51 - 24))
-# for i in range(10, 24):
-#     for j in range(24, 51):
-#         e[i - 10][j - 24] = LSPIA_FUNC_cross_surface(file_name, i, j, 0.2)
-#         if e[i - 10][j - 24] < e_low:
-#             print('(%d, %d)' % (i, j))
-# pass
+# LSPIA_FUNC_cross_surface(file_name, 20, 36, 0.5)
