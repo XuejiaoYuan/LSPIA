@@ -653,6 +653,8 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     col = len(D_inter_X[0])
     col_even = len(D_X[0])
     col_odd = len(D_X[0]) - 1
+    row_even = int(row / 2) - row%2
+    row_odd = int(row/2)
     p = 3  # degree
     q = 3
     # P_h = int(row - 15)  # the number of control points
@@ -733,19 +735,27 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     '''
     Step 4. Calculate the collocation matrix of the NTP blending basis
     '''
-    Nik_u = np.zeros((row, P_h))
+    # Nik_u = np.zeros((row, P_h))
     Nik_v_even = np.zeros((col_even, P_l))
     Nik_v_odd = np.zeros((col_odd, P_l))
+    # for i in range(row):
+    #     for j in range(P_h):
+    #         Nik_u[i][j] = bf.BaseFunction(j, p + 1, D_Y[row - 1 - i][0], knot_uv[0])
+    Nik_u_even = np.zeros((row_even, P_h))
+    Nik_u_odd = np.zeros((row_odd, P_h))
     for i in range(row):
         for j in range(P_h):
-            Nik_u[i][j] = bf.BaseFunction(j, p + 1, D_Y[row - 1 - i][0], knot_uv[0])
+            if i % 2:
+                Nik_u_odd[int(i / 2)][j] = bf.BaseFunction(j, p + 1, param_u[i], knot_uv[0])
+            else:
+                Nik_u_even[int(i / 2)][j] = bf.BaseFunction(j, p + 1, param_u[i], knot_uv[0])
     for i in range(col_even):
         for j in range(P_l):
             Nik_v_even[i][j] = bf.BaseFunction(j, q + 1, D_X[0][i], knot_uv[1])
     for i in range(col_odd):
         for j in range(P_l):
             Nik_v_odd[i][j] = bf.BaseFunction(j, q + 1, D_X[1][i], knot_uv[1])
-    Nik = [Nik_u, Nik_v_even, Nik_v_odd]
+    Nik = [Nik_u_even, Nik_u_odd, Nik_v_even, Nik_v_odd]
     # miu = 0.12
 
     '''
@@ -775,7 +785,7 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
         e.append(ek)
     MSE = ek / (row * col - int(row / 2))
     print(MSE)
-    error_matrix, error_list = sfe.point_fitting_error(D, P, Nik)
+    error = sfe.point_fitting_error(D, P, Nik)
 
     with open('error_list_' + str(P_h) + 'x' + str(P_l) + '_' + str(miu) + '.txt', 'w') as file:
         for i in range(len(e) - 1):
@@ -1105,7 +1115,7 @@ def error_trend():
     plt.show()
 
 
-fieldfile_path = 'field_data/cross_field/300x300/'
-file_name = fieldfile_path + 'shadow_block_m1_d1_h8_min0.txt'
+fieldfile_path = 'field_data/cross_field/30x60/'
+file_name = fieldfile_path + 'cross_shadow_block_m1_d1_h8_min0.txt'
 
 # LSPIA_FUNC_cross_surface(file_name, 20, 36, 0.5)

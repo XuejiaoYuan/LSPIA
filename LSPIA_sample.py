@@ -17,6 +17,7 @@ import surface_fitting_error as sfe
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from LSPIA import load_shadow_block_data
+import time
 
 
 def sample_surface_data(D, P_h, P_l):
@@ -82,6 +83,8 @@ def LSPIA_FUNC_surface(file_name, D_h, D_l, P_h, P_l, miu):
     D_sample = sample_surface_data(D_shadow_block, D_h, D_l)
     D = [D_sample[0], D_sample[1], D_sample[2]]
 
+    start_t = time.clock()
+
     D_X = D[0]
     D_Y = D[1]
     D_Z = D[2]
@@ -91,8 +94,8 @@ def LSPIA_FUNC_surface(file_name, D_h, D_l, P_h, P_l, miu):
     row_even = int(col / 2) + col % 2
     row_odd = int(col / 2)
 
-    p = 3  # degree
-    q = 3
+    p = 4  # degree
+    q = 4
 
     '''
     Step 1. Calculate the parameters
@@ -100,7 +103,20 @@ def LSPIA_FUNC_surface(file_name, D_h, D_l, P_h, P_l, miu):
     param_u = [y[0] for y in D_Y]
     param_u = sorted(param_u)
 
-    param_v = [x for x in D_X[0]]
+    # param_v = [x for x in D_X[0]]
+    param_v = []
+    tmp_param = np.zeros((1, col))
+    for j in range(col):
+        if j == 0:
+            tmp_param[0][0] = D_X[0][0]
+        elif j == col-1:
+            tmp_param[0][j] = D_X[0][j]
+        else:
+            for i in range(row):
+                tmp_param[0][j] = tmp_param[0][j] + D_X[i][j]
+            tmp_param[0][j] = tmp_param[0][j] / row
+    tmp_param.sort()
+    param_v = tmp_param.tolist()[0]
 
     '''
     Step 2. Calculate the knot vectors
@@ -140,9 +156,9 @@ def LSPIA_FUNC_surface(file_name, D_h, D_l, P_h, P_l, miu):
         P_X_row.append(D_X[-1][f_j])
         P_Y_row.append(D_Y[-1][f_j])
         P_Z_row.append(D_Z[-1][f_j])
-    P_X_row.append(D_X[f_i][-1])
-    P_Y_row.append(D_Y[f_i][-1])
-    P_Z_row.append(D_Z[f_i][-1])
+    P_X_row.append(D_X[-1][-1])
+    P_Y_row.append(D_Y[-1][-1])
+    P_Z_row.append(D_Z[-1][-1])
     P_X.append(P_X_row)
     P_Y.append(P_Y_row)
     P_Z.append(P_Z_row)
@@ -156,12 +172,13 @@ def LSPIA_FUNC_surface(file_name, D_h, D_l, P_h, P_l, miu):
     Nik_u_odd = np.zeros((row_odd, P_h))
     Nik_v_even = np.zeros((col, P_l))
     Nik_v_odd = np.zeros((col, P_l))
-    for i in range(row):
+    for i in range(row-1, -1, -1):
         for j in range(P_h):
             if i % 2:
                 Nik_u_odd[int(i / 2)][j] = bf.BaseFunction(j, p + 1, param_u[i], knot_uv[0])
             else:
                 Nik_u_even[int(i / 2)][j] = bf.BaseFunction(j, p + 1, param_u[i], knot_uv[0])
+
     for i in range(col):
         for j in range(P_l):
             Nik_v_even[i][j] = bf.BaseFunction(j, q + 1, D_X[0][i], knot_uv[1])
@@ -170,58 +187,78 @@ def LSPIA_FUNC_surface(file_name, D_h, D_l, P_h, P_l, miu):
             Nik_v_odd[i][j] = bf.BaseFunction(j, q + 1, D_X[1][i], knot_uv[1])
     Nik = [Nik_u_even, Nik_u_odd, Nik_v_even, Nik_v_odd]
 
-    '''
-    Step 5. First iteration
-    '''
-    e = []
-    ek = sfe.surface_fitting_error(D, P, Nik)
-    e.append(ek)
 
-    '''
-    Step 6. Adjusting control points
-    '''
-    P = sfe.surface_adjusting_control_points(D, P, Nik, miu)
-    ek = sfe.surface_fitting_error(D, P, Nik)
-    e.append(ek)
+    """
+    Step 5. Calculate the fitting error and control points
+    """
+    error = sfe.surface_fitting(D, P, Nik, miu, 1e-3)
+    MSE = error / (D_h * D_l)
+    print(MSE)
 
-    cnt = 0
-    while (abs(e[-1] - e[-2]) >= 1e-7):
-        cnt = cnt + 1
-        print('iteration ', cnt)
-        P = sfe.surface_adjusting_control_points(D, P, Nik, miu)
-        ek = sfe.surface_fitting_error(D, P, Nik)
-        e.append(ek)
-    print(ek)
-    '''
-    Step 7. Calculate data points on the b-spline curve
-    '''
-    piece_u = 100
-    piece_v = 100
-    p_piece_u = np.linspace(param_u[0], param_u[-1], piece_u)
-    p_piece_v = np.linspace(param_v[0], param_v[-1], piece_v)
-    Nik_piece_u = np.zeros((piece_u, P_h))
-    Nik_piece_v = np.zeros((piece_v, P_l))
-    for i in range(piece_u):
+    # end_t = time.clock()
+    # print(str(end_t))
+    """
+    Step 6. Calculate the error between data points and the fitting surface
+    """
+    row_data = len(D_shadow_block[0])
+    col_data = len(D_shadow_block[0][0])
+
+    row_data_even = int(row_data / 2) + row_data % 2
+    row_data_odd = int(row_data / 2)
+    Nik_piece_u_even = np.zeros((row_data_even, P_h))
+    Nik_piece_u_odd = np.zeros((row_data_odd, P_h))
+    Nik_piece_v_even = np.zeros((col_data, P_l))
+    Nik_piece_v_odd = np.zeros((col_data - 1, P_l))
+    for i in range(row_data-1, -1, -1):
         for j in range(P_h):
-            Nik_piece_u[i][j] = bf.BaseFunction(j, p + 1, p_piece_u[i], knot_uv[0])
-    for i in range(piece_v):
+            if i % 2:
+                Nik_piece_u_odd[int(i / 2)][j] = bf.BaseFunction(j, p + 1,
+                                                                 D_shadow_block[1][row_data-1-i][0], knot_uv[0])
+            else:
+                Nik_piece_u_even[int(i / 2)][j] = bf.BaseFunction(j, p + 1,
+                                                                  D_shadow_block[1][row_data-1-i][0], knot_uv[0])
+    for i in range(col_data):
         for j in range(P_l):
-            Nik_piece_v[i][j] = bf.BaseFunction(j, q + 1, p_piece_v[i], knot_uv[1])
-
-    p_piece = [piece_u, piece_v]
-    Nik_piece = [Nik_piece_u, Nik_piece_v]
-    P_piece = sfe.surface(p_piece, P, Nik_piece)
-
-    '''
-    Step 8. Draw b-spline curve
-    '''
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    p_piece_u_r = [p_piece_u[i] for i in range(piece_u - 1, -1, -1)]
-    X, Y = np.meshgrid(p_piece_v, p_piece_u_r)
-    Z = np.array(P_piece[2])
-    ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
-    plt.show()
+            Nik_piece_v_even[i][j] = bf.BaseFunction(j, q + 1, D_shadow_block[0][0][i], knot_uv[1])
+    for i in range(col_data-1):
+        for j in range(P_l):
+            Nik_piece_v_odd[i][j] = bf.BaseFunction(j, q + 1, D_shadow_block[0][1][i], knot_uv[1])
+    Nik_piece = [Nik_piece_u_even, Nik_piece_u_odd, Nik_piece_v_even, Nik_piece_v_odd]
+    error = sfe.point_fitting_error(
+        [D_shadow_block[0], D_shadow_block[1], D_shadow_block[3]],
+        P, Nik_piece
+    )
+    print(error)
+    # '''
+    # Step 7. Calculate data points on the b-spline curve
+    # '''
+    # piece_u = 100
+    # piece_v = 100
+    # p_piece_u = np.linspace(param_u[0], param_u[-1], piece_u)
+    # p_piece_v = np.linspace(param_v[0], param_v[-1], piece_v)
+    # Nik_piece_u = np.zeros((piece_u, P_h))
+    # Nik_piece_v = np.zeros((piece_v, P_l))
+    # for i in range(piece_u):
+    #     for j in range(P_h):
+    #         Nik_piece_u[i][j] = bf.BaseFunction(j, p + 1, p_piece_u[i], knot_uv[0])
+    # for i in range(piece_v):
+    #     for j in range(P_l):
+    #         Nik_piece_v[i][j] = bf.BaseFunction(j, q + 1, p_piece_v[i], knot_uv[1])
+    #
+    # p_piece = [piece_u, piece_v]
+    # Nik_piece = [Nik_piece_u, Nik_piece_v]
+    # P_piece = sfe.surface(p_piece, P, Nik_piece)
+    #
+    # '''
+    # Step 8. Draw b-spline curve
+    # '''
+    # fig = plt.figure()
+    # ax = fig.add_subplot(111, projection='3d')
+    # p_piece_u_r = [p_piece_u[i] for i in range(piece_u - 1, -1, -1)]
+    # X, Y = np.meshgrid(p_piece_v, p_piece_u_r)
+    # Z = np.array(P_piece[2])
+    # ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
+    # plt.show()
 
 
 def LSPIA_FUNC_surface_for_sample_data(file_name, P_h, P_l, miu):
@@ -438,4 +475,4 @@ def LSPIA_FUNC_surface_for_sample_data(file_name, P_h, P_l, miu):
 fieldfile_path = 'field_data/cross_field/300x300/'
 file_name = fieldfile_path + 'shadow_block_m1_d1_h8_min0.txt'
 
-LSPIA_FUNC_surface(file_name, 100, 100, 50, 50, 0.35)
+LSPIA_FUNC_surface(file_name, 100, 100, 72, 72, 0.94)
