@@ -9,8 +9,7 @@ def surface_fitting_error(D, P, Nik):
     :param Nik: the basis spline function
     :return: fitting error
     '''
-    error_matrix, error_list = point_fitting_error(D, P, Nik)
-    error = np.sum(np.square(error_list))
+    error = point_fitting_error(D, P, Nik)
     return error
 
 
@@ -22,27 +21,36 @@ def point_fitting_error(D, P, Nik):
     :param Nik: the basis spline function
     :return: fitting error matrix
     '''
-    error = []
-    error_list = []
-    Nik_u = Nik[0]
-    Nik_v: list
-    row = len(D[0])
-    for i in range(row):
-        # for j in range(col):
-        error_row = np.zeros((1, len(D[0][0]) - i % 2))
-        for dim in range(len(D)):
-            Nik_u_row = np.array(Nik_u[i])
-            P_dim = np.array(P[dim])
-            if i % 2:
-                Nik_v = Nik[2]
-            else:
-                Nik_v = Nik[1]
-            D_cal = np.dot(np.dot(Nik_u_row, P_dim), np.transpose(Nik_v))
-            error_row = error_row + (D[dim][i] - D_cal)
-        error.append(error_row.tolist()[0])
-        error_list.extend(error_row.tolist()[0])
+    error = 0
 
-    return error, error_list
+    # Nik_v: list
+    row = len(D[0])
+
+    # for dim in range(len(D)):
+    for dim in range(1):
+        D_dim_even = [D[dim][i] for i in range(0, len(D[dim]), 2)]
+        D_dim_odd = [D[dim][i] for i in range(1, len(D[dim]), 2)]
+        P_dim = np.array(P[dim])
+        D_cal_even = np.dot(np.dot(Nik[0], P_dim), np.transpose(Nik[2]))
+        D_cal_odd = np.dot(np.dot(Nik[1], P_dim), np.transpose(Nik[3]))
+        delta_even_uv = D_dim_even - D_cal_even
+        delta_odd_uv = D_dim_odd - D_cal_odd
+        error = error + np.sum(np.square(delta_even_uv)) + np.sum(np.square(delta_odd_uv))
+
+
+    # Nik_u = Nik[4]
+    # for i in range(row):
+    #     for dim in range(len(D)):
+    #         Nik_u_row = np.array(Nik_u[i])
+    #         P_dim = np.array(P[dim])
+    #         if i % 2:
+    #             Nik_v = Nik[3] # Nik[2]
+    #         else:
+    #             Nik_v = Nik[2] # Nik[1]
+    #         D_cal = np.dot(np.dot(Nik_u_row, P_dim), np.transpose(Nik_v))
+    #         delta = D[dim][i] - D_cal
+    #         error = error + np.sum(np.square(delta))
+    return error
 
 
 def surface_adjusting_control_points(D, P, Nik, miu):
@@ -53,15 +61,11 @@ def surface_adjusting_control_points(D, P, Nik, miu):
     :param Nik: the basis spline function
     :return: new control points
     '''
-    row = len(D[0])
-    col_even = len(D[0][0])
-    col_odd = len(D[0][1])
-    Nik_u = Nik[0]
-    Nik_v_even = Nik[1]
-    Nik_v_odd = Nik[2]
+    Nik_u_even = Nik[0]
+    Nik_u_odd = Nik[1]
+    Nik_v_even = Nik[2]
+    Nik_v_odd = Nik[3]
 
-    Nik_u_even = np.array([Nik[0][i] for i in range(0, row, 2)])
-    Nik_u_odd = np.array([Nik[0][i] for i in range(1, row, 2)])
     for dim in range(len(D)):
         D_dim_even = [D[dim][i] for i in range(0, len(D[dim]), 2)]
         D_dim_odd = [D[dim][i] for i in range(1, len(D[dim]), 2)]
