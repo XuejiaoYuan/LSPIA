@@ -9,7 +9,7 @@ def BaseFunction(i, k, u, knot):
     '''
     Nik_u = 0
     if k == 1:
-        if u >= knot[i] and u <= knot[i + 1]:
+        if knot[i] <= u <= knot[i + 1]:
             Nik_u = 1.0
         else:
             Nik_u = 0.0

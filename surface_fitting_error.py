@@ -23,8 +23,8 @@ def point_fitting_error(D, P, Nik):
     '''
     error = 0
     for dim in range(3):
-        D_dim_even = [D[dim][i] for i in range(0, len(D[dim]), 2)]
-        D_dim_odd = [D[dim][i] for i in range(1, len(D[dim]), 2)]
+        D_dim_even = np.array([D[dim][i] for i in range(0, len(D[dim]), 2)])
+        D_dim_odd = np.array([D[dim][i] for i in range(1, len(D[dim]), 2)])
         P_dim = np.array(P[dim])
         D_cal_even = np.dot(np.dot(Nik[0], P_dim), np.transpose(Nik[2]))
         D_cal_odd = np.dot(np.dot(Nik[1], P_dim), np.transpose(Nik[3]))

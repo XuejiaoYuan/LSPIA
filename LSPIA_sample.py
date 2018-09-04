@@ -192,7 +192,7 @@ def LSPIA_FUNC_surface(file_name, D_h, D_l, P_h, P_l, miu):
     Step 5. Calculate the fitting error and control points
     """
     error = sfe.surface_fitting(D, P, Nik, miu, 1e-3)
-    MSE = error / (D_h * D_l)
+    MSE = np.sqrt(error/(D_h *D_l))
     print(MSE)
 
     # end_t = time.clock()
@@ -475,4 +475,4 @@ def LSPIA_FUNC_surface_for_sample_data(file_name, P_h, P_l, miu):
 fieldfile_path = 'field_data/cross_field/300x300/'
 file_name = fieldfile_path + 'shadow_block_m1_d1_h8_min0.txt'
 
-LSPIA_FUNC_surface(file_name, 100, 100, 72, 72, 0.94)
+LSPIA_FUNC_surface(file_name, 100, 100, 72, 72, 0.4)

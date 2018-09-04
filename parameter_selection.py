@@ -87,7 +87,7 @@ def LSPIA_knot_vector(param, k, N, M):
     for i in range(m - k, m + 1):
         knot[0][i] = param[-1]
     for i in range(k + 1, m - k):
-        j = i - 3
+        j = i - 3  # 3
         jd = j * M / (N - 3.0)
         n = int(jd)
         alpha = jd - n
