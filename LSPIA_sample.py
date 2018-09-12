@@ -293,7 +293,228 @@ def LSPIA_FUNC_surface(file_name, D_h, D_l, P_h, P_l, miu):
     plt.show()
 
 
+def sample_surface_data_all(D, P_h, P_l):
+    '''
+    Sample the surface data
+    :param D: the surface data
+    :param P_h: the number of sample rows
+    :param P_l: the number of sample cols
+    :return: sample data
+    '''
+    D_X = D[0]
+    D_Y = D[1]
+    D_Z = D[3]
+    row = len(D_X)
+
+    P_X = []
+    P_Y = []
+    P_Z = []
+    for i in range(0, P_h):
+        f_i = int(row * i / P_h)
+        P_X_row = []
+        P_Y_row = []
+        P_Z_row = []
+        for j in range(0, P_l):
+            f_j = int(len(D_X[f_i]) * j / P_l)
+            P_X_row.append(D_X[f_i][f_j])
+            P_Y_row.append(D_Y[f_i][f_j])
+            P_Z_row.append(D_Z[f_i][f_j])
+        P_X.append(P_X_row)
+        P_Y.append(P_Y_row)
+        P_Z.append(P_Z_row)
+
+    P = [P_X, P_Y, P_Z]
+    return P
+
+
+def LSPIA_FUNC_surface_all(file_name, D_h, D_l, P_h, P_l, miu):
+    '''
+       The LSPIA iterative method for blending surfaces.
+       '''
+    D_shadow_block = load_shadow_block_data(file_name)
+    D_sample = sample_surface_data_all(D_shadow_block, D_h, D_l)
+    D = [D_sample[0], D_sample[1], D_sample[2]]
+
+    start_t = time.clock()
+
+    D_X = D[0]
+    D_Y = D[1]
+    D_Z = D[2]
+
+    row = len(D_X)
+    col = len(D_X[0])
+    # row_even = int(col / 2) + col % 2
+    # row_odd = int(col / 2)
+
+    p = 3  # degree
+    q = 3
+
+    '''
+    Step 1. Calculate the parameters
+    '''
+    param_u = [y[0] for y in D_Y]
+    param_u = sorted(param_u)
+    # param_v = np.linspace(D_X[0][0], D_X[0][-1], col)
+    param_v = []
+    for i in range(2):
+        for j in range(len(D_X[i])):
+            param_v.append(D_X[i][j])
+    param_v = sorted(param_v)
+
+    '''
+    Step 2. Calculate the knot vectors
+    '''
+    knot_uv = [[], []]
+    knot_uv[0] = ps.LSPIA_knot_vector(param_u, p, P_h, len(param_u))
+    knot_uv[1] = ps.LSPIA_knot_vector(param_v, q, P_l, len(param_v))
+
+    '''
+    Step 3. Select initial control points
+    '''
+    P_X = []
+    P_Y = []
+    P_Z = []
+    for i in range(0, P_h - 1):
+        f_i = int(row * i / P_h)
+        P_X_row = []
+        P_Y_row = []
+        P_Z_row = []
+        for j in range(0, P_l - 1):
+            f_j = int(col * j / P_l)
+            P_X_row.append(D_X[f_i][f_j])
+            P_Y_row.append(D_Y[f_i][f_j])
+            P_Z_row.append(D_Z[f_i][f_j])
+        P_X_row.append(D_X[f_i][-1])
+        P_Y_row.append(D_Y[f_i][-1])
+        P_Z_row.append(D_Z[f_i][-1])
+        P_X.append(P_X_row)
+        P_Y.append(P_Y_row)
+        P_Z.append(P_Z_row)
+
+    P_X_row = []
+    P_Y_row = []
+    P_Z_row = []
+    for j in range(0, P_l - 1):
+        f_j = int(col * j / P_l)
+        P_X_row.append(D_X[-1][f_j])
+        P_Y_row.append(D_Y[-1][f_j])
+        P_Z_row.append(D_Z[-1][f_j])
+    P_X_row.append(D_X[-1][-1])
+    P_Y_row.append(D_Y[-1][-1])
+    P_Z_row.append(D_Z[-1][-1])
+    P_X.append(P_X_row)
+    P_Y.append(P_Y_row)
+    P_Z.append(P_Z_row)
+
+    P = [P_X, P_Y, P_Z]
+
+    '''
+    Step 4. Calculate the collocation matrix of the NTP blending basis
+    '''
+    Nik_u = np.zeros((row, P_h))
+    Nik_v = np.zeros((len(param_v), P_l))
+    for i in range(row-1, -1, -1):
+        for j in range(P_h):
+            Nik_u[i][j] = bf.BaseFunction(j, p+1, param_u[i], knot_uv[0])
+
+    for i in range(len(param_v)):
+        for j in range(P_l):
+            Nik_v[i][j] = bf.BaseFunction(j, q + 1, param_v[i], knot_uv[1])
+
+    Nik = [Nik_u, Nik_v]
+
+
+    """
+    Step 5. Calculate the fitting error and control points
+    """
+    error = sfe.surface_fitting_all(D, P, [param_u, param_v], Nik, miu, 1e-4)
+    MSE = np.sqrt(error/(D_h * D_l))
+    print(MSE)
+
+    # end_t = time.clock()
+    # print(str(end_t))
+    """
+    Step 6. Calculate the error between data points and the fitting surface
+    """
+    data_row = len(D_shadow_block[0])
+    data_col = len(D_shadow_block[0][0]) + len(D_shadow_block[0][1])
+
+    param_piece_u = [y[0] for y in D_shadow_block[1]]
+    param_piece_u = sorted(param_piece_u)
+    param_piece_v = []
+    for i in range(2):
+        for j in range(len(D_shadow_block[0][i])):
+            param_piece_v.append(D_shadow_block[0][i][j])
+    param_piece_v = sorted(param_piece_v)
+    map_piece_u = {}
+    for i in range(len(param_piece_u)):
+        map_piece_u[param_piece_u[i]] = i
+    map_piece_v = {}
+    for i in range(len(param_piece_v)):
+        map_piece_v[param_piece_v[i]] = i
+    D_total = np.zeros((data_row, data_col))
+    marker = np.zeros((data_row, data_col))
+    for i in range(len(D_shadow_block[2])):
+        for j in range(len(D_shadow_block[2][i])):
+            f_i = map_piece_u[D_shadow_block[1][i][j]]
+            f_j = map_piece_v[D_shadow_block[0][i][j]]
+            D_total[f_i][f_j] = D_shadow_block[3][i][j]
+            marker[f_i][f_j] = 1
+
+    Nik_piece_u = np.zeros((data_row, P_h))
+    Nik_piece_v = np.zeros((data_col, P_l))
+
+    for i in range(len(param_piece_u)):
+        for j in range(P_h):
+            Nik_piece_u[i][j] = bf.BaseFunction(j, p + 1, param_piece_u[i], knot_uv[0])
+    for i in range(len(param_piece_v)):
+        for j in range(P_l):
+            Nik_piece_v[i][j] = bf.BaseFunction(j, q + 1, param_piece_v[i], knot_uv[1])
+
+    error_square = sfe.point_fitting_error_all(
+        D_total, P,
+        marker, [Nik_piece_u, Nik_piece_v]
+    )
+    print(error_square)
+    num = 89850
+    print(num)
+    MSE = np.sqrt(error_square / num)
+    print(MSE)
+
+    '''
+    Step 7. Calculate data points on the b-spline curve
+    '''
+    piece_u = 100
+    piece_v = 100
+    p_piece_u = np.linspace(param_u[0], param_u[-1], piece_u)
+    p_piece_v = np.linspace(param_v[0], param_v[-1], piece_v)
+    Nik_piece_u = np.zeros((piece_u, P_h))
+    Nik_piece_v = np.zeros((piece_v, P_l))
+    for i in range(piece_u):
+        for j in range(P_h):
+            Nik_piece_u[i][j] = bf.BaseFunction(j, p + 1, p_piece_u[i], knot_uv[0])
+    for i in range(piece_v):
+        for j in range(P_l):
+            Nik_piece_v[i][j] = bf.BaseFunction(j, q + 1, p_piece_v[i], knot_uv[1])
+
+    p_piece = [piece_u, piece_v]
+    Nik_piece = [Nik_piece_u, Nik_piece_v]
+    P_piece = sfe.surface(p_piece, P, Nik_piece)
+
+    '''
+    Step 8. Draw b-spline curve
+    '''
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    p_piece_u_r = [p_piece_u[i] for i in range(piece_u - 1, -1, -1)]
+    X, Y = np.meshgrid(p_piece_v, p_piece_u_r)
+    Z = np.array(P_piece[2])
+    ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
+    plt.show()
+
+
 fieldfile_path = 'field_data/cross_field/300x300/'
 file_name = fieldfile_path + 'shadow_block_m1_d1_h8_min0.txt'
 
-LSPIA_FUNC_surface(file_name, 100, 100, 76, 76, 0.9)
+# LSPIA_FUNC_surface(file_name, 100, 100, 76, 76, 0.9)
+LSPIA_FUNC_surface_all(file_name, 100, 100, 76, 76, 0.9)
