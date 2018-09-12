@@ -635,8 +635,6 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     Note:
             全部数据点用于LSPIA
     '''
-    # D = load_surface_data('surface_data2')
-    # D_shadow_block = load_shadow_block_data('cross_shadow_block_m1_d1_h8_min0.txt')
     D_shadow_block = load_shadow_block_data(file_name)
     D = [D_shadow_block[0], D_shadow_block[1], D_shadow_block[3]]
     D_inter = cross_data_preprocess(D)
@@ -653,12 +651,10 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     col = len(D_inter_X[0])
     col_even = len(D_X[0])
     col_odd = len(D_X[0]) - 1
-    row_even = int(row / 2) - row%2
+    row_even = int(row / 2) - row % 2
     row_odd = int(row/2)
     p = 3  # degree
     q = 3
-    # P_h = int(row - 15)  # the number of control points
-    # P_l = int(col_even - 40)
 
     '''
     Step 1. Calculate the parameters
@@ -738,9 +734,6 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     # Nik_u = np.zeros((row, P_h))
     Nik_v_even = np.zeros((col_even, P_l))
     Nik_v_odd = np.zeros((col_odd, P_l))
-    # for i in range(row):
-    #     for j in range(P_h):
-    #         Nik_u[i][j] = bf.BaseFunction(j, p + 1, D_Y[row - 1 - i][0], knot_uv[0])
     Nik_u_even = np.zeros((row_even, P_h))
     Nik_u_odd = np.zeros((row_odd, P_h))
     for i in range(row):
@@ -756,7 +749,6 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
         for j in range(P_l):
             Nik_v_odd[i][j] = bf.BaseFunction(j, q + 1, D_X[1][i], knot_uv[1])
     Nik = [Nik_u_even, Nik_u_odd, Nik_v_even, Nik_v_odd]
-    # miu = 0.12
 
     '''
     Step 5. First iteration
@@ -776,7 +768,7 @@ def LSPIA_FUNC_cross_surface(file_name, P_h, P_l, miu):
     e.append(ek)
 
     cnt = 0
-    while (abs(e[-1] - e[-2]) >= 1e-3):
+    while abs(e[-1] - e[-2]) >= 1e-3:
         cnt = cnt + 1
         print('iteration ', cnt)
         P = sfe.surface_adjusting_control_points(D, P, Nik, miu)
