@@ -80,6 +80,34 @@ def load_shadow_block_data(filename):
     return [D_X, D_Y, shadow_Z, block_Z]
 
 
+def load_sd_bk_data(filename):
+    D_X = []
+    D_Y = []
+    sd_bk_Z = []
+    with open(filename) as file:
+        line = file.readline()
+        # print(line)
+        line = line.strip()
+        word = line.split(' ')
+        row = int(word[0])
+        col = int(word[1])
+        for i in range(row):
+            D_X_row = []
+            D_Y_row = []
+            sd_bk_Z_row = []
+            tmp_col = col - i % 2
+            for j in range(tmp_col):
+                line = file.readline()
+                line = line.strip()
+                word = line.split(' ')
+                D_X_row.append(float(word[0]))
+                D_Y_row.append(float(word[1]))
+                sd_bk_Z_row.append(float(word[2]))
+            D_X.append(D_X_row)
+            D_Y.append(D_Y_row)
+            sd_bk_Z.append(sd_bk_Z_row)
+    return [D_X, D_Y, sd_bk_Z]
+
 def LSPIA_curve():
     '''
     The LSPIA iterative method for blending curves.
