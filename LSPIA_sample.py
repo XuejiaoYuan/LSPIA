@@ -22,8 +22,13 @@ import time
 import plotly.plotly as py
 import plotly.graph_objs as go
 import plotly
+import os
+from dotenv import load_dotenv
 
-plotly.tools.set_credentials_file(username='XuejiaoYuan', api_key='EILNngXAgk92tL3xeUy5')
+load_dotenv(dotenv_path='.env', verbose=True)
+username =  os.getenv('username')
+api_key = os.getenv('api_key')
+plotly.tools.set_credentials_file(username=username, api_key=api_key)
 
 
 def sample_surface_data(D, P_h, P_l):
@@ -616,8 +621,10 @@ def LSPIA_FUNC_surface_all(file_name, D_h, D_l, P_h, P_l, miu):
 
 
 fieldfile_path = 'field_data/cross_field/300x300/'
-for i in range(8, 18):
-    file_name = fieldfile_path + 'clipper_m1_d25_h' + str(i) + '_min0.txt'
-    LSPIA_FUNC_surface(file_name, 100, 100, 76, 76, 0.9)
+for m in range(1, 2):
+    for d in [1, 25]:
+        for h in range(8, 18):
+            file_name = fieldfile_path + 'clipper_m' + str(m) + '_d' + str(d) + '_h' + str(h) + '_min0.txt'
+            LSPIA_FUNC_surface(file_name, 100, 100, 76, 76, 0.9)
 
 # LSPIA_FUNC_surface_all(file_name, 100, 100, 76, 76, 0.9)
