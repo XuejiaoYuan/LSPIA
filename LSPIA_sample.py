@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from LSPIA import load_shadow_block_data, load_sd_bk_data
 import time
-
+import seaborn as sns
 import plotly.plotly as py
 import plotly.graph_objs as go
 import plotly
@@ -26,8 +26,8 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='.env', verbose=True)
-username =  os.getenv('username')
-api_key = os.getenv('api_key')
+username = os.getenv('USER_NAME')
+api_key = os.getenv('API_KEY')
 plotly.tools.set_credentials_file(username=username, api_key=api_key)
 
 
@@ -349,57 +349,68 @@ def LSPIA_FUNC_surface(file_name, D_h, D_l, P_h, P_l, miu):
     '''
     Step 8. Draw b-spline curve
     '''
-    # fig = plt.figure()
-    # ax = fig.add_subplot(111, projection='3d')
+    fig = plt.figure()
+    ax = fig.add_subplot(111, projection='3d')
+    ax.view_init(60, -120)      # 60, -120
+    fig.set_size_inches(9.25, 5.25)
     p_piece_u_r = [p_piece_u[i] for i in range(piece_u - 1, -1, -1)]
     X, Y = np.meshgrid(p_piece_v, p_piece_u_r)
     Z = np.array(P_piece[2])
-    # ax.plot_surface(X, Y, Z, rstride=1, cstride=1, cmap='rainbow')
+    plt.gca().invert_yaxis()
+    ax.plot_surface(X, Y, Z, cmap='rainbow')
+    file = file_name.split('/')
+    file = file[-1].split('.')
+    file = file[-2] + '_mse-' + str(MSE)
     # plt.show()
-    colorscale = [[0.0, 'rgb(20,29,67)'],
-                  [0.1, 'rgb(28,76,96)'],
-                  [0.2, 'rgb(16,125,121)'],
-                  [0.3, 'rgb(92,166,133)'],
-                  [0.4, 'rgb(182,202,175)'],
-                  [0.5, 'rgb(253,245,243)'],
-                  [0.6, 'rgb(230,183,162)'],
-                  [0.7, 'rgb(211,118,105)'],
-                  [0.8, 'rgb(174,63,95)'],
-                  [0.9, 'rgb(116,25,93)'],
-                  [1.0, 'rgb(51,13,53)']]
-    trace1 = go.Surface(x=X, y=Y, z=Z, opacity=0.7, colorscale=colorscale)
-    z_offset=(np.min(Z)-2)*np.zeros(Z.shape)
-    proj_z = lambda x, y, z: z
-    colorsurfz = proj_z(X,Y,Z)
-    tracez = go.Surface(z=z_offset, x=X, y=Y,
-                        colorscale=colorscale,
-                        showlegend=False,
-                        showscale=False,
-                        surfacecolor=colorsurfz)
-    layout = go.Layout(
-        # scene = dict(
-        # xaxis = dict(
-        #      backgroundcolor="rgb(200, 200, 230)",
-        #      gridcolor="rgb(255, 255, 255)",
-        #      showbackground=True,
-        #      zerolinecolor="rgb(255, 255, 255)",),
-        # yaxis = dict(
-        #     backgroundcolor="rgb(230, 200,230)",
-        #     gridcolor="rgb(255, 255, 255)",
-        #     showbackground=True,
-        #     zerolinecolor="rgb(255, 255, 255)"),
-        # zaxis = dict(
-        #     backgroundcolor="rgb(230, 230,200)",
-        #     gridcolor="rgb(255, 255, 255)",
-        #     showbackground=True,
-        #     zerolinecolor="rgb(255, 255, 255)",),),
-        width=700,
-        margin=dict(
-            r=10, l=10,
-            b=10, t=10))
-    fig = go.Figure(data=[trace1, tracez], layout=layout)
-    py.plot(fig)
+    plt.savefig(resfile_path + '3d/' + file + '.jpeg')
 
+    fig2 = plt.figure()
+    # y_label = np.linspace(param_u[0], param_u[-1], 5)
+    # x_label = np.linspace(param_v[0], param_v[-1], 5)
+    inverse_Z = np.zeros((Z.shape))
+    for i in range(len(Z)):
+        inverse_Z[-i-1] = Z[i]
+    sns.heatmap(inverse_Z, cmap='rainbow', xticklabels=False, yticklabels=False)
+    fig2.set_size_inches(9.25, 5.25)
+    # fig2.colorbar(cax)
+    # plt.show()
+    plt.savefig(resfile_path + 'proj/proj_' + file + '.jpeg')
+    plt.close(fig)
+    plt.close(fig2)
+    # colorscale = [[0.0, 'rgb(20,29,67)'],
+    #               [0.1, 'rgb(28,76,96)'],
+    #               [0.2, 'rgb(16,125,121)'],
+    #               [0.3, 'rgb(92,166,133)'],
+    #               [0.4, 'rgb(182,202,175)'],
+    #               [0.5, 'rgb(253,245,243)'],
+    #               [0.6, 'rgb(230,183,162)'],
+    #               [0.7, 'rgb(211,118,105)'],
+    #               [0.8, 'rgb(174,63,95)'],
+    #               [0.9, 'rgb(116,25,93)'],
+    #               [1.0, 'rgb(51,13,53)']]
+    # trace1 = go.Surface(x=X, y=Y, z=Z, opacity=0.9, colorscale=colorscale)
+    # z_offset = (np.min(Z) - 2) * np.zeros(Z.shape)
+    # proj_z = lambda x, y, z: z
+    # colorsurfz = proj_z(X, Y, Z)
+    # tracez = go.Surface(z=z_offset, x=X, y=Y,
+    #                     colorscale=colorscale,
+    #                     showlegend=False,
+    #                     showscale=False,
+    #                     surfacecolor=colorsurfz)
+    # layout = go.Layout(
+    #     width=700,
+    #     margin=dict(
+    #         r=20, l=20,
+    #         b=20, t=20))
+    # fig1 = go.Figure(data=[trace1, tracez], layout=layout)
+    # file = file_name.split('/')
+    # file = file[-1].split('.')
+    # file = file[-2]+ '_mse-' + str(MSE)
+    # py.plot(fig1, filename=file, auto_open=False)
+    # fig2 = go.Figure(data=[trace1], layout=layout)
+    # py.image.save_as(fig2, filename=resfile_path + file + '.jpeg')
+    # fig3 = go.Figure(data=[tracez], layout=layout)
+    # py.image.save_as(fig3, filename=resfile_path + 'proj_' + file + '.jpeg')
 
 def sample_surface_data_all(D, P_h, P_l):
     '''
@@ -620,10 +631,11 @@ def LSPIA_FUNC_surface_all(file_name, D_h, D_l, P_h, P_l, miu):
     plt.show()
 
 
+resfile_path = 'res/300x300/13.5/'
 fieldfile_path = 'field_data/cross_field/300x300/'
-for m in range(1, 2):
-    for d in [1, 25]:
-        for h in range(8, 18):
+for m in range(1, 13):
+    for d in range(1, 26, 4):
+        for h in range(8, 13):
             file_name = fieldfile_path + 'clipper_m' + str(m) + '_d' + str(d) + '_h' + str(h) + '_min0.txt'
             LSPIA_FUNC_surface(file_name, 100, 100, 76, 76, 0.9)
 

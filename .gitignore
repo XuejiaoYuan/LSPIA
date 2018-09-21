@@ -1,3 +1,5 @@
 .idea/
 __pycache__/
 .env
+field_data/cross_field/300x300/*
+res/300x300/*
